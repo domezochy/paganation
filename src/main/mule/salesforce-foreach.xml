@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="772283c9-e87d-477f-97ab-814b5a53b041" >
+		<salesforce:basic-connection username="${salesforce.username}" securityToken="${salesforce.token}" password="${salesforce.password}"/>
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="0a56413b-a217-4f60-8ea1-80c9e66c45c9" file="properties/dev_config.yaml" />
+	<flow name="salesforce-foreachFlow" doc:id="21ddde69-7af2-4afa-ad45-cb96a377f685" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="f6669e13-f004-4889-b125-d9d48ba7824a" config-ref="HTTP_Listener_config" path="/salesforce"/>
+		<ee:transform doc:name="Transform Message" doc:id="f63dac0c-0727-46c7-9e5f-d2cf8374ef8a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="fcfbcb7c-0a91-49c0-be44-b7ea79abd4bf" >
+			<ee:transform doc:name="Transform Message" doc:id="45705f3c-e106-4a70-991b-15f46e3a9e84" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[payload]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<salesforce:create doc:id="1f867685-cbd1-4fab-9a61-ed7a47f99957" config-ref="Salesforce_Config" type="Account"/>
+			<set-variable value="#[(vars.myPayload default []) + payload]" doc:name="Set Variable" doc:id="7f73ed54-31fd-49db-a635-5ab5567dbbfe" variableName="myPayload"/>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="8c3cbe2c-786d-4803-a2f1-bd49b7ef7829" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.myPayload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

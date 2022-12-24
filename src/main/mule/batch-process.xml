@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="batch-processFlow" doc:id="a815f52e-1971-4df4-9f3a-cae5518ce480" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="2673e377-a8a4-4415-bb18-901fe4542eac" config-ref="HTTP_Listener_config" path="/batchprocess"/>
+		<set-payload value='#[[2, 4, "apple" , 6, 1]]' doc:name='[2, 4, "apple", 6, 1]' doc:id="33f88649-12ae-4df6-99bc-5ea09ef446be" />
+		<batch:job jobName="batch-processBatch_Job" doc:id="2d911a87-6ac5-42f5-9990-f7426cf6e32b" maxFailedRecords="10">
+			<batch:process-records >
+				<batch:step name="ALL" doc:id="696cef2c-d742-4f56-b1f4-4530c62478a4" acceptPolicy="ALL">
+					<set-payload value="#[payload * 2]" doc:name="payload * 2" doc:id="5cb9881e-d1a0-49e4-8734-a615b289e66f" />
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="e7d60a29-e083-499c-9c1f-adeefae644a9" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="900d5ade-dde0-4e51-ad51-5e99c37a7c94" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Only_Failures" doc:id="2ef4f688-6505-4492-9270-33446f364a94" acceptPolicy="ONLY_FAILURES">
+					<set-payload value="#[payload * 10]" doc:name="Set Payload" doc:id="8e37b611-5975-4ddd-afd3-616acb7ad1b8" />
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="df8ee080-a0a6-48ea-82df-ef8357c7628a" size="3">
+						<logger level="INFO" doc:name="Logger" doc:id="58ab16f1-e5f8-439c-93f7-1451e4e2b3fa" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="70d69bb8-57b1-4d5f-a220-cdb7cac0092c" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform doc:name="Transform Message" doc:id="2922ec1c-6c9c-4910-943d-984b71995345" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.failedRecords]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
