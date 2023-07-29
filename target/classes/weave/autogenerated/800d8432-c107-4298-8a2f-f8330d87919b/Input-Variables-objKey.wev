@@ -1,0 +1,5 @@
+%dw 2.0
+
+type auto_800d8432_c107_4298_8a2f_f8330d87919b_Input_Variables_objKey = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+

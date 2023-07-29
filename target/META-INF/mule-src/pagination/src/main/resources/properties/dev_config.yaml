@@ -1,0 +1,10 @@
+salesforce:
+ username: 'emailAddress@yahoo.com'
+ password: 'password_dummy'
+ token: 'EZWUvlxgvxY0fc2YLA5x4t96'
+db:
+ host: '127.0.0.1'
+ user: 'root'
+ password: 'ndaula13'
+ port: '3306'
+ database: 'muletrainingdb'
